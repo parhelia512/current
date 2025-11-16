@@ -44,7 +44,7 @@ void eprintf(const char *fmt, ...);
 void eprintfln(const char *fmt, ...);
 
 void debug(const char *msg, ...);
-void comp_elog(const char *msg, ...);
+_Noreturn void comp_elog(const char *msg, ...);
 
 // returns false if failed
 bool read_entire_file(const char *filename, char **buf);
@@ -54,6 +54,13 @@ bool write_entire_file(const char *filename, const char *content);
 
 // returns allocated string, must be freed
 const char *filename_from_path(const char *path);
+
+// returns allocated string
+// needs to be freed
+char *u64_to_string(uint64_t n);
+
+// returns false if failed
+bool parse_i64(const char *str, int64_t *n);
 
 // returns false if failed
 bool parse_u64(const char *str, uint64_t *n);

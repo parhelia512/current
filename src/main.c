@@ -81,11 +81,6 @@ const char *build(Cli cli) {
     Lexer lex = lexer(content);
     if (arrlen(lex.tokens) != arrlen(lex.cursors)) comp_elog("expected length of tokens and length of cursors to be the same");
 
-    // if (DEBUG_MODE) {
-    //     print_tokens(lex.tokens);
-    //     printfln("");
-    // }
-
     Arr(Stmnt) ast = NULL;
     Parser parser = parser_init(lex, cli.filename);
     for (Stmnt stmnt = parser_parse(&parser); stmnt.kind != SkNone; stmnt = parser_parse(&parser)) {

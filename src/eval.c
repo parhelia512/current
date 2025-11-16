@@ -80,8 +80,13 @@ uint64_t eval_expr(Sema *sema, Expr *expr) {
     sema_expr(sema, expr);
 
     switch (expr->kind) {
-        case EkIntLit:
-            return (uint64_t)expr->numlit;
+        case EkIntLit:;
+            uint64_t n = 0;
+            if (parse_u64(expr->lit, &n)) {
+                return n;
+            } else {
+                assert(false && "couldn't parse intlit to u64");
+            }
         case EkIdent:
             // TODO: find out if ident is compile time known
             return 0;

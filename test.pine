@@ -1,4 +1,7 @@
 main :: fn() void {
-    word := "hello";
-    ptr := &word;
+    a := 10;
+    b := 10.5;
+    c := "hello";
+    d := 'd';
+    e := c"eee";
 }

@@ -139,10 +139,7 @@ typedef struct Expr {
     union {
         Type type_expr;
 
-        double numlit;
-        uint8_t charlit;
-        const char *strlit;
-        const char *cstrlit;
+        const char *lit;
         const char *ident;
 
         Literal literal;
@@ -164,13 +161,15 @@ Expr expr_true(size_t index);
 Expr expr_false(size_t index);
 Expr expr_null(Type t, size_t index);
 Expr expr_type(Type v, size_t index);
-Expr expr_intlit(double v, Type t, size_t index);
-Expr expr_floatlit(double v, Type t, size_t index);
-Expr expr_charlit(uint8_t v, size_t index);
-Expr expr_strlit(const char *v, size_t index);
-Expr expr_cstrlit(const char *v, size_t index);
+
+Expr expr_intlit(const char *s, Type t, size_t index);
+Expr expr_floatlit(const char *s, Type t, size_t index);
+Expr expr_charlit(const char *s, size_t index);
+Expr expr_strlit(const char *s, size_t index);
+Expr expr_cstrlit(const char *s, size_t index);
+Expr expr_ident(const char *s, Type t, size_t index);
+
 Expr expr_literal(Literal v, Type t, size_t index);
-Expr expr_ident(const char *v, Type t, size_t index);
 Expr expr_fncall(FnCall v, Type t, size_t index);
 Expr expr_binop(Binop v, Type t, size_t index);
 Expr expr_unop(Unop v, Type t, size_t index);

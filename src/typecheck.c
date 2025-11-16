@@ -524,7 +524,8 @@ void tc_number_within_bounds(Sema *sema, Type type, Expr expr) {
     if (expr.kind == EkIntLit) {
         switch (type.kind) {
             case TkF32: {
-                double value = expr.numlit;
+                double value = 0.0f;
+                assert(parse_f64(expr.lit, &value));
                 if (value > F32_MAX || value < F32_MIN) {
                     elog(sema, expr.cursors_idx, "literal \"%f\" cannot be represented in f32", value);
                 }
@@ -533,19 +534,22 @@ void tc_number_within_bounds(Sema *sema, Type type, Expr expr) {
                 // no way to properly check here
                 break;
             case TkU8: {
-                uint64_t value = (uint64_t)expr.numlit;
+                uint64_t value = 0;
+                assert(parse_u64(expr.lit, &value));
                 if (value > U8_MAX) {
                     elog(sema, expr.cursors_idx, "literal \"%zu\" cannot be represented in u8", value);
                 }
             } break;
             case TkU16: {
-                uint64_t value = (uint64_t)expr.numlit;
+                uint64_t value = 0;
+                assert(parse_u64(expr.lit, &value));
                 if (value > U16_MAX) {
                     elog(sema, expr.cursors_idx, "literal \"%zu\" cannot be represented in u16", value);
                 }
             } break;
             case TkU32: {
-                uint64_t value = (uint64_t)expr.numlit;
+                uint64_t value = 0;
+                assert(parse_u64(expr.lit, &value));
                 if (value > U32_MAX) {
                     elog(sema, expr.cursors_idx, "literal \"%zu\" cannot be represented in u32", value);
                 }
@@ -557,19 +561,22 @@ void tc_number_within_bounds(Sema *sema, Type type, Expr expr) {
                 // no way to properly check here
                 break;
             case TkI8: {
-                int64_t value = (int64_t)expr.numlit;
+                int64_t value = 0;
+                assert(parse_i64(expr.lit, &value));
                 if (value > I8_MAX || value < I8_MIN) {
                     elog(sema, expr.cursors_idx, "literal \"%zu\" cannot be represented in i8", value);
                 }
             } break;
             case TkI16: {
-                int64_t value = (int64_t)expr.numlit;
+                int64_t value = 0;
+                assert(parse_i64(expr.lit, &value));
                 if (value > I16_MAX || value < I8_MIN) {
                     elog(sema, expr.cursors_idx, "literal \"%zu\" cannot be represented in i16", value);
                 }
             } break;
             case TkI32: {
-                int64_t value = (int64_t)expr.numlit;
+                int64_t value = 0;
+                assert(parse_i64(expr.lit, &value));
                 if (value > I32_MAX || value < I32_MIN) {
                     elog(sema, expr.cursors_idx, "literal \"%zu\" cannot be represented in i32", value);
                 }
@@ -586,19 +593,22 @@ void tc_number_within_bounds(Sema *sema, Type type, Expr expr) {
     } else if (expr.kind == EkUnop && expr.unop.kind == UkNegate && expr.unop.val->kind == EkIntLit) {
         switch (type.kind) {
             case TkI8: {
-                int64_t value = (int64_t)expr.numlit;
+                int64_t value = 0;
+                assert(parse_i64(expr.lit, &value));
                 if (value > I8_MAX || value < I8_MIN) {
                     elog(sema, expr.cursors_idx, "literal \"%zu\" cannot be represented in i8", value);
                 }
             } break;
             case TkI16: {
-                int64_t value = (int64_t)expr.numlit;
+                int64_t value = 0;
+                assert(parse_i64(expr.lit, &value));
                 if (value > I16_MAX || value < I16_MIN) {
                     elog(sema, expr.cursors_idx, "literal \"%zu\" cannot be represented in i16", value);
                 }
             } break;
             case TkI32: {
-                int64_t value = (int64_t)expr.numlit;
+                int64_t value = 0;
+                assert(parse_i64(expr.lit, &value));
                 if (value > I32_MAX || value < I32_MIN) {
                     elog(sema, expr.cursors_idx, "literal \"%zu\" cannot be represented in i32", value);
                 }

@@ -16,6 +16,7 @@
 #include "include/utils.h"
 
 extern unsigned char builtin_defs[];
+extern unsigned int builtin_defs_len;
 
 void mastrfree(MaybeAllocStr s) {
     if (s.alloced) strbfree(s.str);
@@ -386,42 +387,42 @@ strb gen_numlit_expr(Expr expr) {
 
     switch (expr.type.kind) {
         case TkF32:
-            strbprintf(&s, "%.7ff", (float)expr.numlit);
+            strbprintf(&s, "%sf", expr.lit);
             break;
         case TkF64:
         case TkUntypedFloat:
-            strbprintf(&s, "%.15f", expr.numlit);
+            strbprintf(&s, "%s", expr.lit);
             break;
         case TkU8:
-            strbprintf(&s, "UINT8_C(%" PRIu8 ")", (uint8_t)expr.numlit);
+            strbprintf(&s, "UINT8_C(%s)", expr.lit);
             break;
         case TkU16:
-            strbprintf(&s, "UINT16_C(%" PRIu16 ")", (uint16_t)expr.numlit);
+            strbprintf(&s, "UINT16_C(%s)", expr.lit);
             break;
         case TkU32:
-            strbprintf(&s, "UINT32_C(%" PRIu32 ")", (uint32_t)expr.numlit);
+            strbprintf(&s, "UINT32_C(%s)", expr.lit);
             break;
         case TkU64:
-            strbprintf(&s, "UINT64_C(%" PRIu64 ")", (uint64_t)expr.numlit);
+            strbprintf(&s, "UINT64_C(%s)", expr.lit);
             break;
         case TkUsize:
-            strbprintf(&s, "UINT64_C(%zu)", (size_t)expr.numlit);
+            strbprintf(&s, "UINT64_C(%s)", expr.lit);
             break;
         case TkI8:
-            strbprintf(&s, "INT8_C(%" PRIi8 ")", (int8_t)expr.numlit);
+            strbprintf(&s, "INT8_C(%s)", expr.lit);
             break;
         case TkI16:
-            strbprintf(&s, "INT16_C(%" PRIi16 ")", (int16_t)expr.numlit);
+            strbprintf(&s, "INT16_C(%s)", expr.lit);
             break;
         case TkI32:
-            strbprintf(&s, "INT32_C(%" PRIi32 ")", (int32_t)expr.numlit);
+            strbprintf(&s, "INT32_C(%s)", expr.lit);
             break;
         case TkI64:
         case TkUntypedInt:
-            strbprintf(&s, "INT64_C(%" PRIi64 ")", (int64_t)expr.numlit);
+            strbprintf(&s, "INT64_C(%s)", expr.lit);
             break;
         case TkIsize:
-            strbprintf(&s, "INT64_C(%zd)", (ssize_t)expr.numlit);
+            strbprintf(&s, "INT64_C(%s)", expr.lit);
             break;
         default: break;
     }
@@ -682,7 +683,7 @@ MaybeAllocStr gen_expr(Gen *gen, Expr expr) {
         }
         case EkCharLit: {
             strb lit = NULL;
-            strbprintf(&lit, "%d", expr.charlit);
+            strbprintf(&lit, "'%s'", expr.lit);
             return (MaybeAllocStr){
                 .str = lit,
                 .alloced = true,
@@ -690,7 +691,7 @@ MaybeAllocStr gen_expr(Gen *gen, Expr expr) {
         }
         case EkStrLit: {
             strb lit = NULL;
-            strbprintf(&lit, "(PineString){.ptr = \"%s\", .len = %zu}", expr.strlit, strlen(expr.strlit));
+            strbprintf(&lit, "(PineString){.ptr = \"%s\", .len = %zu}", expr.lit, strlen(expr.lit));
             return (MaybeAllocStr){
                 .str = lit,
                 .alloced = true,
@@ -698,7 +699,7 @@ MaybeAllocStr gen_expr(Gen *gen, Expr expr) {
         }
         case EkCstrLit: {
             strb lit = NULL;
-            strbprintf(&lit, "\"%s\"", expr.cstrlit);
+            strbprintf(&lit, "\"%s\"", expr.lit);
             return (MaybeAllocStr){
                 .str = lit,
                 .alloced = true,
@@ -1497,13 +1498,14 @@ void gen_resolve_defs(Gen *gen) {
 }
 
 void gen_generate(Gen *gen) {
-    char *defs;
+    char *defs = {0};
     bool defs_ok = read_entire_file("./newsrc/pine_builtin_defs.txt", &defs);
     if (!defs_ok) {
-        defs = (char*)builtin_defs;
+        strbprintf(&gen->defs, "%.*s", builtin_defs_len, builtin_defs);
+    } else {
+        strbprintf(&gen->defs, "%s", defs);
     }
 
-    strbprintf(&gen->defs, "%s", defs);
     strbprintf(&gen->code, "#include \"output.h\"\n");
 
     for (size_t i = 0; i < arrlenu(gen->ast); i++) {
@@ -1538,5 +1540,5 @@ void gen_generate(Gen *gen) {
 
     gen_resolve_defs(gen);
 
-    strbprintf(&gen->defs, "#endif // PINE_DEFS_H");
+    strbprintf(&gen->defs, "\n#endif // PINE_DEFS_H");
 }

@@ -599,7 +599,7 @@ void sema_array_literal(Sema *sema, Expr *expr) {
         }
     } else {
         *array->len = expr_intlit(
-            (uint64_t)arrlenu(expr->literal.exprs),
+            u64_to_string((uint64_t)arrlenu(expr->literal.exprs)),
             type_integer(TkUsize, TYPECONST, expr->cursors_idx),
             expr->cursors_idx
         );
@@ -1681,7 +1681,7 @@ void sema_enum_decl(Sema *sema, Stmnt *stmnt) {
         Stmnt *f = &stmnt->enumdecl.fields[i];
 
         if (f->constdecl.value.kind == EkNone) {
-            f->constdecl.value = expr_intlit(counter, type_integer(TkUntypedInt, TYPECONST, f->cursors_idx), f->cursors_idx);
+            f->constdecl.value = expr_intlit(u64_to_string((uint64_t)counter), type_integer(TkUntypedInt, TYPECONST, f->cursors_idx), f->cursors_idx);
             counter++;
         } else {
             f->constdecl.type.kind = TkI32;

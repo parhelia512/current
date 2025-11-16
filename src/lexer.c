@@ -10,22 +10,22 @@ Token token_none(void) {
     return (Token){.kind = TokNone};
 }
 Token token_ident(const char *s) {
-    return (Token){.kind = TokIdent, .ident = s};
+    return (Token){.kind = TokIdent, .string = s};
 }
-Token token_intlit(uint64_t n) {
-    return (Token){.kind = TokIntLit, .numlit = (double)n};
+Token token_intlit(const char *s) {
+    return (Token){.kind = TokIntLit, .string = s};
 }
-Token token_floatlit(double n) {
-    return (Token){.kind = TokFloatLit, .numlit = n};
+Token token_floatlit(const char *s) {
+    return (Token){.kind = TokFloatLit, .string = s};
 }
-Token token_charlit(char s) {
-    return (Token){.kind = TokCharLit, .charlit = s};
+Token token_charlit(const char *s) {
+    return (Token){.kind = TokCharLit, .string = s};
 }
 Token token_strlit(const char *s) {
-    return (Token){.kind = TokStrLit, .strlit = s};
+    return (Token){.kind = TokStrLit, .string = s};
 }
 Token token_directive(const char *s) {
-    return (Token){.kind = TokDirective, .directive = s};
+    return (Token){.kind = TokDirective, .string = s};
 }
 
 const char *tokenkind_stringify(TokenKind kind) {
@@ -75,27 +75,27 @@ strb token_stringify(Token tok) {
     switch (tok.kind) {
         case TokIdent:
         {
-            strbprintf(&s, "Ident(%s)", tok.ident);
+            strbprintf(&s, "Ident(%s)", tok.string);
         } break;
         case TokIntLit:
         {
-            strbprintf(&s, "IntLit(%lu)", (uint64_t)tok.numlit);
+            strbprintf(&s, "IntLit(%s)", tok.string);
         } break;
         case TokFloatLit:
         {
-            strbprintf(&s, "FloatLit(%f)", tok.numlit);
+            strbprintf(&s, "FloatLit(%s)", tok.string);
         } break;
         case TokCharLit:
         {
-            strbprintf(&s, "CharLit('%c')", tok.charlit);
+            strbprintf(&s, "CharLit('%s')", tok.string);
         } break;
         case TokStrLit:
         {
-            strbprintf(&s, "StrLit(\"%s\")", tok.strlit);
+            strbprintf(&s, "StrLit(\"%s\")", tok.string);
         } break;
         case TokDirective:
         {
-            strbprintf(&s, "Directive(\"%s\")", tok.directive);
+            strbprintf(&s, "Directive(\"%s\")", tok.string);
         } break;
         case TokColon:
         case TokSemiColon:
@@ -172,9 +172,9 @@ static void resolve_buffer(Lexer *lex) {
         if (streq(lex->buf, "_")) {
             tok = (Token){ .kind = TokUnderscore };
         } else if (parse_u64(lex->buf, &u64)) {
-            tok = token_intlit(u64);
+            tok = token_intlit(strdup(lex->buf));
         }  else if (parse_f64(lex->buf, &f64)) {
-            tok = token_floatlit(f64);
+            tok = token_floatlit(strdup(lex->buf));
         } else if (lex->is_directive) {
             tok = token_directive(strdup(lex->buf));
             lex->is_directive = false;
@@ -199,39 +199,38 @@ static void resolve_buffer_push_token(Lexer *lex, Token tok) {
 }
 
 // exits with 1 if failed
-static char strtochar(const char *s) {
-    if (strlen(s) == 1) {
-        return s[0];
-    }
-
-    if (streq(s, "\\\\")) {
-        return '\\';
-    } else if (streq(s, "\\'")) {
-        return '\'';
-    } else if (streq(s, "\\\"")) {
-        return '\"';
-    } else if (streq(s, "\\n")) {
-        return '\n';
-    } else if (streq(s, "\\r")) {
-        return '\r';
-    } else if (streq(s, "\\t")) {
-        return '\t';
-    } else if (streq(s, "\\v")) {
-        return '\v';
-    } else if (streq(s, "\\f")) {
-        return '\v';
-    } else if (streq(s, "\\a")) {
-        return '\v';
-    } else if (streq(s, "\\b")) {
-        return '\v';
-    } else if (streq(s, "\\e")) {
-        return '\v';
-    }
-
-    // TODO: support \x, etc
-
-    exit(1);
-}
+// static char strtochar(const char *s) {
+//     if (strlen(s) == 1) {
+//         return s[0];
+//     }
+//
+//     if (streq(s, "\\\\")) {
+//         return '\\';
+//     } else if (streq(s, "\\'")) {
+//         return '\'';
+//     } else if (streq(s, "\\\"")) {
+//         return '\"';
+//     } else if (streq(s, "\\n")) {
+//         return '\n';
+//     } else if (streq(s, "\\r")) {
+//         return '\r';
+//     } else if (streq(s, "\\t")) {
+//         return '\t';
+//     } else if (streq(s, "\\v")) {
+//         return '\v';
+//     } else if (streq(s, "\\f")) {
+//         return '\v';
+//     } else if (streq(s, "\\a")) {
+//         return '\v';
+//     } else if (streq(s, "\\b")) {
+//         return '\v';
+//     } else if (streq(s, "\\e")) {
+//         return '\v';
+//     }
+//
+//     // TODO: support \x, etc
+//     comp_elog("escape character %s not implemented yet", s);
+// }
 
 Lexer lexer_init(void) {
     Lexer lex = {
@@ -321,7 +320,7 @@ Lexer lexer(const char *source) {
                 if (lex.in_quotes) {
                     lex.in_quotes = false;
                     arrpush(lex.cursors, lex.cursor);
-                    arrpush(lex.tokens, token_charlit(strtochar(lex.buf)));
+                    arrpush(lex.tokens, token_charlit(strdup(lex.buf)));
                     reset_buffer(&lex);
                 } else {
                     resolve_buffer(&lex);

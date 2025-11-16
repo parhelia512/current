@@ -46,57 +46,48 @@ Expr expr_type(Type v, size_t index) {
     };
 }
 
-Expr expr_intlit(double v, Type t, size_t index) {
+Expr expr_intlit(const char *s, Type t, size_t index) {
     return (Expr){
         .kind = EkIntLit,
         .cursors_idx = index,
         .type = t,
-        .numlit = v,
+        .lit = s,
     };
 }
 
-Expr expr_floatlit(double v, Type t, size_t index) {
+Expr expr_floatlit(const char *s, Type t, size_t index) {
     return (Expr){
         .kind = EkFloatLit,
         .cursors_idx = index,
         .type = t,
-        .numlit = v,
+        .lit = s,
     };
 }
 
-Expr expr_charlit(uint8_t v, size_t index) {
+Expr expr_charlit(const char *s, size_t index) {
     return (Expr){
         .kind = EkCharLit,
         .cursors_idx = index,
         .type = type_char(TYPEVAR, index),
-        .charlit = v,
+        .lit = s,
     };
 }
 
-Expr expr_strlit(const char *v, size_t index) {
+Expr expr_strlit(const char *s, size_t index) {
     return (Expr){
         .kind = EkStrLit,
         .cursors_idx = index,
         .type = type_string(TYPEVAR, index),
-        .strlit = v,
+        .lit = s,
     };
 }
 
-Expr expr_cstrlit(const char *v, size_t index) {
+Expr expr_cstrlit(const char *s, size_t index) {
     return (Expr){
         .kind = EkCstrLit,
         .cursors_idx = index,
         .type = type_cstring(TYPEVAR, index),
-        .cstrlit = v,
-    };
-}
-
-Expr expr_literal(Literal v, Type t, size_t index) {
-    return (Expr){
-        .kind = EkLiteral,
-        .cursors_idx = index,
-        .type = t,
-        .literal = v,
+        .lit = s,
     };
 }
 
@@ -106,6 +97,15 @@ Expr expr_ident(const char *v, Type t, size_t index) {
         .cursors_idx = index,
         .type = t,
         .ident = v,
+    };
+}
+
+Expr expr_literal(Literal v, Type t, size_t index) {
+    return (Expr){
+        .kind = EkLiteral,
+        .cursors_idx = index,
+        .type = t,
+        .literal = v,
     };
 }
 

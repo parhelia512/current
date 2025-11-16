@@ -193,7 +193,7 @@ strb string_from_type(Type t) {
         } break;
         case TkArray: {
             strb sub = string_from_type(*t.array.of);
-            strbprintf(&ret, "[%" PRIu64 "]%s", (uint64_t)t.array.len->numlit, sub);
+            strbprintf(&ret, "[%s]%s", t.array.len->lit, sub);
             strbfree(sub);
         } break;
         case TkOption: {

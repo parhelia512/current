@@ -56,20 +56,14 @@ const char *tokenkind_stringify(TokenKind kind);
 
 typedef struct Token {
     TokenKind kind;
-    union {
-        const char *ident;
-        double numlit;
-        char charlit;
-        const char *strlit;
-        const char *directive;
-    };
+    const char *string;
 } Token;
 
 Token token_none(void);
 Token token_ident(const char *s);
-Token token_intlit(uint64_t n);
-Token token_floatlit(double n);
-Token token_charlit(char s);
+Token token_intlit(const char *s);
+Token token_floatlit(const char *s);
+Token token_charlit(const char *s);
 Token token_strlit(const char *s);
 Token token_directive(const char *s);
 void print_tokens(Token *tokens);

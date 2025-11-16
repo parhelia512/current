@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include "include/utils.h"
 
 void vprintfln(const char *fmt, va_list args) {
@@ -120,7 +121,7 @@ void debug(const char *msg, ...) {
     va_end(args);
 }
 
-void comp_elog(const char *msg, ...) {
+_Noreturn void comp_elog(const char *msg, ...) {
     eprintf(TERM_RED "error" TERM_END ": ");
 
     va_list args;
@@ -132,34 +133,96 @@ void comp_elog(const char *msg, ...) {
     exit(1);
 }
 
+// returns allocated string
+// needs to be freed
+// NOTE: this uses ealloc, it will exit the program if unable to alloc
+char *u64_to_string(uint64_t n) {
+    int len = snprintf(NULL, 0, "%"PRIu64, n);
+    char *str = ealloc(len + 1);
+    snprintf(str, len + 1, "%"PRIu64, n);
+    return str;
+}
+
+// returns false if failed
+bool parse_i64(const char *str, int64_t *n) {
+    if (streq(str, "")) return false;
+
+    bool neg = false;
+    if (str[0] == '-') {
+        neg = true;
+    }
+    str += 1;
+
+    int64_t base = 10;
+    if (strlen(str) > 2 && str[0] == '0') {
+        switch (str[1]) {
+            case 'b':;
+                base = 2;
+                str += 2;
+                break;
+            case 'o':;
+                base = 8;
+                str += 2;
+                break;
+            case 'x':;
+                base = 16;
+                str += 2;
+                break;
+        }
+    }
+
+    int64_t value = 0;
+    size_t i = 0;
+    for (; i < strlen(str); i++) {
+        if (str[i] == '_') {
+            continue;
+        }
+
+        int64_t v = str[i] - '0';
+        if (v >= base) {
+            break;
+        }
+
+        value *= base;
+        value += v;
+    }
+    str += i;
+
+    if (neg) {
+        value = -value;
+    }
+
+    *n = value;
+    return strlen(str) == 0;
+}
+
 // returns false if failed
 bool parse_u64(const char *str, uint64_t *n) {
-    if (strcmp(str, "") == 0) return false;
+    if (streq(str, "")) return false;
 
-    size_t str_head = 0;
     uint64_t value = 0;
 
-    if (strlen(str) > 1 && str[str_head] == '+') {
-        str_head += 1;
+    if (strlen(str) > 1 && str[0] == '+') {
+        str += 1;
     }
 
     unsigned int base = 10;
-    if (strlen(str) > 2 && str[str_head] == '0') {
-        switch (str[str_head + 1]) {
+    if (strlen(str) > 2 && str[0] == '0') {
+        switch (str[1]) {
             case 'b':
             {
                 base = 2;
-                str_head += 2;
+                str += 2;
             } break;
             case 'o':
             {
                 base = 8;
-                str_head += 2;
+                str += 2;
             } break;
             case 'x':
             {
                 base = 16;
-                str_head += 2;
+                str += 2;
             } break;
         }
     }
@@ -178,10 +241,10 @@ bool parse_u64(const char *str, uint64_t *n) {
         value += v;
         index += 1;
     }
-    str_head += index;
+    str += index;
 
     *n = value;
-    return str_head == strlen(str);
+    return strlen(str) == 0;
 }
 
 bool parse_f64(const char *str, double *n) {

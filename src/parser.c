@@ -190,7 +190,7 @@ static Identifiers convert_ident(Parser *parser, Token tok) {
         };
     }
 
-    Keyword k = keyword_map(tok.ident);
+    Keyword k = keyword_map(tok.string);
     if (k != KwNone) {
         return (Identifiers){
             .kind = IkKeyword,
@@ -198,7 +198,7 @@ static Identifiers convert_ident(Parser *parser, Token tok) {
         };
     }
 
-    Type t = type_from_string(tok.ident);
+    Type t = type_from_string(tok.string);
     if (t.kind != TkNone) {
         return (Identifiers){
             .kind = IkType,
@@ -208,7 +208,7 @@ static Identifiers convert_ident(Parser *parser, Token tok) {
 
     return (Identifiers){
         .kind = IkIdent,
-        .expr = expr_ident(tok.ident, type_none(), (size_t)parser->cursors_idx),
+        .expr = expr_ident(tok.string, type_none(), (size_t)parser->cursors_idx),
     };
 }
 
@@ -451,7 +451,7 @@ Expr parse_primary(Parser *parser) {
                     return parse_end_literal(parser, type);
                 } else if (streq(convert.expr.ident, "c") && tok.kind == TokStrLit) {
                     next(parser);
-                    return expr_cstrlit(tok.strlit, (size_t)parser->cursors_idx);
+                    return expr_cstrlit(tok.string, (size_t)parser->cursors_idx);
                 }
 
                 // <ident>
@@ -470,14 +470,14 @@ Expr parse_primary(Parser *parser) {
                     return expr_type(type, (size_t)parser->cursors_idx);
                 }
             } else {
-                elog(parser, parser->cursors_idx, "unexpected identifier %s", tok.ident);
+                elog(parser, parser->cursors_idx, "unexpected identifier %s", tok.string);
                 return expr_none();
             }
         } break;
         case TokIntLit: {
             next(parser);
             return expr_intlit(
-                tok.numlit,
+                tok.string,
                 type_integer(
                     TkUntypedInt,
                     TYPECONST,
@@ -489,7 +489,7 @@ Expr parse_primary(Parser *parser) {
         case TokFloatLit: {
             next(parser);
             Expr expr = expr_floatlit(
-                tok.numlit,
+                tok.string,
                 type_decimal(
                     TkUntypedFloat,
                     TYPECONST,
@@ -501,11 +501,11 @@ Expr parse_primary(Parser *parser) {
         } break;
         case TokCharLit: {
             next(parser);
-            return expr_charlit(tok.charlit, (size_t)parser->cursors_idx);
+            return expr_charlit(tok.string, (size_t)parser->cursors_idx);
         } break;
         case TokStrLit: {
             next(parser);
-            return expr_strlit(tok.strlit, (size_t)parser->cursors_idx);
+            return expr_strlit(tok.string, (size_t)parser->cursors_idx);
         } break;
         case TokLeftBracket: {
             next(parser);
@@ -626,7 +626,7 @@ Expr parse_unary(Parser *parser) {
         op.kind != TokAmpersand &&
         op.kind != TokTilde
     ) {
-        if (op.kind == TokIdent && (streq(op.ident, "cast") || streq(op.ident, "sizeof"))) {
+        if (op.kind == TokIdent && (streq(op.string, "cast") || streq(op.string, "sizeof"))) {
             goto resume;
         }
         return parse_fn_call(parser, expr_none());
@@ -635,7 +635,7 @@ Expr parse_unary(Parser *parser) {
 resume:
     next(parser);
     // handle cast first
-    if (op.kind == TokIdent && streq(op.ident, "cast")) {
+    if (op.kind == TokIdent && streq(op.string, "cast")) {
         expect(parser, TokLeftBracket);
         Type type = parse_type(parser);
         expect(parser, TokRightBracket);
@@ -671,7 +671,7 @@ resume:
                 .val = right,
             }, type_none(), index);
         case TokIdent:
-            if (streq(op.ident, "sizeof")) {
+            if (streq(op.string, "sizeof")) {
                 if (right->kind != EkGrouping) {
                     elog(parser, right->cursors_idx, "expected () after `sizeof`");
                     return expr_none();
@@ -955,7 +955,7 @@ Expr parse_and(Parser *parser) {
             break;
         }
 
-        if (!streq(tok.ident, "and")) {
+        if (!streq(tok.string, "and")) {
             break;
         }
         next(parser);
@@ -981,7 +981,7 @@ Expr parse_or(Parser *parser) {
             break;
         }
 
-        if (!streq(tok.ident, "or")) {
+        if (!streq(tok.string, "or")) {
             break;
         }
         next(parser);
@@ -1633,7 +1633,7 @@ Stmnt parse_if(Parser *parser) {
                     next(parser);
                     arrpush(else_block, parse_if(parser));
                 } else {
-                    elog(parser, parser->cursors_idx, "unexpected identifier %s after `else`", after.ident);
+                    elog(parser, parser->cursors_idx, "unexpected identifier %s after `else`", after.string);
                     return parse_next_stmnt(parser);
                 }
             } else {
@@ -1724,7 +1724,7 @@ Stmnt parse_directive(Parser *parser) {
     Token tok = next(parser);
 
     assert(tok.kind == TokDirective);
-    Directive directive = parser_get_directive(parser, tok.ident);
+    Directive directive = parser_get_directive(parser, tok.string);
     Stmnt d = stmnt_directive(directive, parser->cursors_idx);
 
     switch (directive.kind) {
@@ -1733,7 +1733,7 @@ Stmnt parse_directive(Parser *parser) {
         case DkSyslink: {
             tok = expect(parser, TokStrLit);
             expect(parser, TokSemiColon);
-            d.directive.str = tok.strlit;
+            d.directive.str = tok.string;
         } break;
         default:
             expect(parser, TokSemiColon);
@@ -1772,7 +1772,7 @@ Stmnt parser_parse(Parser *parser) {
                     case KwFor:
                         return parse_for(parser);
                     default:
-                        elog(parser, parser->cursors_idx, "unexpected keyword \"%s\"", tok.ident);
+                        elog(parser, parser->cursors_idx, "unexpected keyword \"%s\"", tok.string);
                         return parse_next_stmnt(parser);
                 }
             }

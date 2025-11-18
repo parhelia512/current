@@ -369,10 +369,7 @@ static Expr get_field(Sema *sema, Type type, const char *fieldname, size_t curso
             enum { ArrayFieldsLen = 2 };
             Expr ArrayFields[ArrayFieldsLen] = {
                 expr_ident("len", type_number(TkUsize, TYPECONST, cursor_idx), cursor_idx),
-                // NOTE: typeof(array.ptr) == cstring?
-                // this is definitely a bug
-                // TODO: fixme
-                expr_ident("ptr", type_cstring(TYPECONST, cursor_idx), cursor_idx),
+                expr_ident("ptr", type_ptr(type.array.of, type.constant, cursor_idx), cursor_idx),
             };
 
             for (size_t i = 0; i < ArrayFieldsLen; i++) {

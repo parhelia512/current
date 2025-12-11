@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "sema.h"
 
+uint64_t eval_sizeof(Sema *sema, Type type);
 uint64_t eval_expr(Sema *sema, Expr *expr);
 
 #endif // EVAL_H

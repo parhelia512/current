@@ -676,7 +676,7 @@ resume:
 
                 return expr_unop((Unop){
                     .kind = UkSizeof,
-                    .val = right,
+                    .val = right->group,
                 }, type_number(TkUntypedInt, TYPECONST, index), index);
             }
             return expr_none();

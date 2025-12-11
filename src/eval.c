@@ -57,15 +57,9 @@ uint64_t eval_binop(Sema *sema, Expr *expr) {
 
 uint64_t eval_sizeof_typedef(Sema *sema, Type type) {
     assert(type.kind == TkTypeDef);
-    // TODO: eval sizeof structs and whatnot
 
     int64_t size = shget(sema->typedef_sizes, type.typedeff);
-    if (size != -1) {
-        return (uint64_t)size;
-    }
-
-
-    shput(sema->typedef_sizes, type.typedeff, size);
+    assert(size != -1 && "sizeof typedef not calculated...");
     return (uint64_t)size;
 }
 
@@ -133,6 +127,8 @@ uint64_t eval_sizeof(Sema *sema, Type type) {
         case TkTypeDef:
             return eval_sizeof_typedef(sema, type);
     }
+
+    return 0;
 }
 
 uint64_t eval_unop(Sema *sema, Expr *expr) {
@@ -179,8 +175,7 @@ uint64_t eval_expr(Sema *sema, Expr *expr) {
         case EkUnop:
             return eval_unop(sema, expr);
         default:
-            debug("not implemented in eval_expr");
-            exit(1);
+            comp_elog("not implemented in eval_expr");
     }
 
     assert(false);

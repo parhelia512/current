@@ -456,7 +456,7 @@ MaybeAllocStr gen_unop_expr(Gen *gen, Expr expr) {
             mastrfree(type);
             break;
         case UkSizeof:
-            strbprintf(&ret, "sizeof%s", value.str);
+            strbprintf(&ret, "%s", value.str);
             break;
         }
     }

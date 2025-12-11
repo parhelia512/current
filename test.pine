@@ -1,2 +1,17 @@
+extern malloc :: fn(size: usize) *void;
+extern puts :: fn(s: cstring) i32;
+
+Entity :: struct {
+    health: u8;
+    name: cstring;
+    age: u32;
+}
+
 main :: fn() void {
+    entity := cast(*Entity)malloc(sizeof(Entity));
+    entity.health = 10;
+    entity.name = c"john";
+    entity.age = 18;
+
+    puts(entity.name);
 }

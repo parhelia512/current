@@ -851,10 +851,21 @@ void sema_unop(Sema *sema, Expr *expr) {
             // expr->unop.val->type = expr->type;
             break;
         case UkSizeof:
-            if (expr->unop.val->group->kind != EkType && expr->unop.val->group->kind != EkIdent) {
+            if (expr->unop.val->kind != EkType && expr->unop.val->kind != EkIdent) {
                 elog(sema, expr->cursors_idx, "expected type or identifier in sizeof");
+                break;
             }
 
+            // NOTE: memory leak here, this one should be handled in the future (hopefully)
+            // NOTE: major / noteable memory leaks will be taken care of before 1.0 during the optimisation phase of the compiler
+
+            Expr newexpr = expr_intlit(
+                u64_to_string(eval_sizeof(sema, expr->unop.val->type)),
+                type_number(TkUsize, TYPECONST, expr->cursors_idx),
+                expr->cursors_idx
+            );
+
+            *expr = newexpr;
             break;
         case UkAddress:
             if (expr->unop.val->kind == EkIdent) {
@@ -1108,6 +1119,9 @@ void sema_expr(Sema *sema, Expr *expr) {
                 expr->type = stmnt.constdecl.type;
                 break;
             } else if (stmnt.kind == SkEnumDecl) {
+                expr->type = type_typedef(stmnt.enumdecl.name.ident, TYPEVAR, stmnt.cursors_idx);
+                break;
+            } else if (stmnt.kind == SkStructDecl) {
                 expr->type = type_typedef(stmnt.enumdecl.name.ident, TYPEVAR, stmnt.cursors_idx);
                 break;
             } else {
@@ -1647,12 +1661,33 @@ void sema_struct_decl(Sema *sema, Stmnt *stmnt) {
     symtab_push(sema, structd->name.ident, *stmnt);
     symtab_new_scope(sema);
 
+    uint64_t total_size = 0;
+    uint64_t largest_alignment = 0;
+
+    for (size_t i = 0; i < arrlenu(structd->fields); i++) {
+        if (structd->fields[i].kind != SkVarDecl) break;
+
+        uint64_t size = eval_sizeof(sema, structd->fields[i].vardecl.type);
+        if (size > largest_alignment) {
+            largest_alignment = size;
+        }
+    }
+
     for (size_t i = 0; i < arrlenu(structd->fields); i++) {
         switch (structd->fields[i].kind) {
             case SkVarDecl:
                 if (structd->fields[i].vardecl.value.kind != EkNone) {
                     elog(sema, structd->fields[i].cursors_idx, "cannot have default values in structs, got one for field %s", structd->fields[i].vardecl.name.ident);
                 }
+
+                uint64_t size = eval_sizeof(sema, structd->fields[i].vardecl.type);
+                if (total_size % size != 0) {
+                    uint64_t padding = size - (total_size % size);
+                    total_size += padding;
+                }
+
+                total_size += size;
+
                 break;
             case SkConstDecl:
                 elog(sema, structd->fields[i].cursors_idx, "cannot have constant fields, got constant field %s", structd->fields[i].constdecl.name.ident);
@@ -1661,12 +1696,21 @@ void sema_struct_decl(Sema *sema, Stmnt *stmnt) {
                 break;
         }
     }
+
+    if (total_size % largest_alignment != 0) {
+        uint64_t padding = largest_alignment - (total_size % largest_alignment);
+        total_size += padding;
+    }
+
+    assert(structd->name.kind == EkIdent);
+    shput(sema->typedef_sizes, structd->name.ident, (int64_t)total_size);
+
     sema_block(sema, structd->fields);
+
     Arr(const char*) visited = NULL;
-
     sema_struct_decl_deps(sema, stmnt, visited);
-
     arrfree(visited);
+
     symtab_pop_scope(sema);
 }
 

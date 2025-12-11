@@ -15,12 +15,13 @@
 - Compile Time Execution
 - First Class Vectors
 - First Class Matrices?
+- Optimise The Compiler
+- Support 32bit Machines In The Compiler
 - Standard Library
 
 # In Progress
 - For Loops
 - Type Casting
-- Sizeof Operator
 - Better Error Messages
 
 # Completed
@@ -67,3 +68,4 @@
 - Slice Literals
 - Array Slicing
 - Default Function Arguments
+- Sizeof Operator

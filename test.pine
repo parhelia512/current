@@ -1,4 +1,2 @@
 main :: fn() void {
-    xs := [2]i32{1, 2};
-    two_ptr := xs.ptr + "show that xs.ptr is now the correct type";
 }

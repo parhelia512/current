@@ -56,14 +56,6 @@ Type type_number(TypeKind kind, CONSTNESS constant, size_t index) {
     };
 }
 
-Type type_decimal(TypeKind kind, CONSTNESS constant, size_t index) {
-    return (Type){
-        .kind = kind,
-        .constant = constant,
-        .cursors_idx = index,
-    };
-}
-
 Type type_range(Range v, CONSTNESS constant, size_t index) {
     return (Type){
         .kind = TkRange,

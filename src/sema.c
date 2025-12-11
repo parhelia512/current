@@ -158,9 +158,13 @@ void dgraph_push(Dgraph *graph, Dnode node) {
 }
 
 Sema sema_init(Arr(Stmnt) ast, const char *filename, Arr(Cursor) cursors, int error_count) {
+    hmsi64 *typedef_sizes = NULL;
+    shdefault(typedef_sizes, -1);
+
     return (Sema){
         .ast = ast,
         .symtab = symtab_init(),
+        .typedef_sizes = typedef_sizes,
         .envinfo = {
             .fn = stmnt_none(),
             .forl = false,
@@ -283,7 +287,7 @@ Type *resolve_expr_type(Sema *sema, Expr *expr) {
                 expr->type = decl.constdecl.type;
             } else {
                 elog(sema, expr->cursors_idx, "expected ident to be a variable or constant");
-                // NOTE: This leaks memory but after sema, the program will exit(1)
+                // NOTE: This leaks memory but the program will exit right after sema
                 Type *type = ealloc(sizeof(Type)); *type = type_poison();
                 return type;
             }
@@ -1176,8 +1180,6 @@ void sema_var_decl(Sema *sema, Stmnt *stmnt) {
 
     sema_expr(sema, &vardecl->value);
     tc_var_decl(sema, stmnt);
-    // debug("%s", string_from_type(vardecl->value.type));
-    // debug("%d", vardecl->value.floatlit);
     symtab_push(sema, vardecl->name.ident, *stmnt);
 }
 

@@ -490,7 +490,7 @@ Expr parse_primary(Parser *parser) {
             next(parser);
             Expr expr = expr_floatlit(
                 tok.string,
-                type_decimal(
+                type_number(
                     TkUntypedFloat,
                     TYPECONST,
                     (size_t)parser->cursors_idx

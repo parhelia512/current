@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "lexer.h"
 #include "stb_ds.h"
 #include "exprs.h"
@@ -36,9 +37,14 @@ typedef struct Dgraph {
 Dgraph dgraph_init(void);
 void dgraph_push(Dgraph *graph, Dnode node);
 
+// string key, i64 value hashmap
+typedef Sh(int64_t) hmsi64;
+
 typedef struct Sema {
-    Stmnt *ast;
+    Arr(Stmnt) ast;
     SymTab symtab;
+
+    hmsi64 *typedef_sizes;
 
     struct {
         Stmnt fn; // can be SkNone

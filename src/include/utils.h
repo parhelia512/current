@@ -33,6 +33,8 @@ typedef SSIZE_T ssize_t;
         (str)[(tail_idx)] = '\0';\
     } while (0)\
 
+#define BITS_TO_BYTES(x) ((x) / 8)
+
 void vprintfln(const char *fmt, va_list args);
 
 void printfln(const char *fmt, ...);

@@ -394,11 +394,11 @@ CREDITS
 #include <stddef.h>
 #include <string.h>
 
-// parts added by AyeAreEm
+// EDITED BY AYEAREEM
 #define Arr(T) T*
-#define Hm(T) Arr(T)
-#define StrHm(T) Hm(T)
-// end
+#define Hm(K, V) struct {K key; V value;}
+#define Sh(V) Hm(char*, V)
+// END
 
 #ifndef STBDS_NO_SHORT_NAMES
 #define arrlen      stbds_arrlen

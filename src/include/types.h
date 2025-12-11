@@ -96,7 +96,6 @@ Type type_char(CONSTNESS constant, size_t index);
 Type type_string(CONSTNESS constant, size_t index);
 Type type_cstring(CONSTNESS constant, size_t index);
 Type type_number(TypeKind kind, CONSTNESS constant, size_t index);
-Type type_decimal(TypeKind kind, CONSTNESS constant, size_t index);
 Type type_range(Range v, CONSTNESS constant, size_t index);
 Type type_slice(Slice v, CONSTNESS constant, size_t index);
 Type type_array(Array v, CONSTNESS constant, size_t index);

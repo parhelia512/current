@@ -55,13 +55,96 @@ uint64_t eval_binop(Sema *sema, Expr *expr) {
     assert(false);
 }
 
+uint64_t eval_sizeof_typedef(Sema *sema, Type type) {
+    assert(type.kind == TkTypeDef);
+    // TODO: eval sizeof structs and whatnot
+
+    int64_t size = shget(sema->typedef_sizes, type.typedeff);
+    if (size != -1) {
+        return (uint64_t)size;
+    }
+
+
+    shput(sema->typedef_sizes, type.typedeff, size);
+    return (uint64_t)size;
+}
+
+uint64_t eval_sizeof(Sema *sema, Type type) {
+    switch (type.kind) {
+        case TkTypeId:
+            // NOTE: not sure what to return here
+        case TkNone:
+        case TkVoid:
+        case TkPoison:
+            return 0;
+
+        case TkBool:
+        case TkI8:
+        case TkU8:
+            return BITS_TO_BYTES(8);
+
+        case TkI16:
+        case TkU16:
+            return BITS_TO_BYTES(16);
+
+        case TkChar:
+        case TkI32:
+        case TkU32:
+        case TkF32:
+            return BITS_TO_BYTES(32);
+
+        case TkI64:
+        case TkU64:
+        case TkF64:
+            return BITS_TO_BYTES(64);
+
+        case TkIsize:
+        case TkUsize:
+            // TODO: this is platform dependent
+            return BITS_TO_BYTES(64);
+
+        case TkUntypedInt:
+        case TkUntypedFloat:
+            // NOTE: not sure if this is the best way to handle this
+            return BITS_TO_BYTES(64);
+
+        case TkString:
+            // TODO: this is platform dependent, (ptr 32 / 64, len 32 / 64)
+            return BITS_TO_BYTES(128);
+
+        case TkCstring:
+            // TODO: this is platform dependent, (ptr 32 / 64)
+            return BITS_TO_BYTES(64);
+
+        case TkRange:
+            return eval_sizeof(sema, *type.range.subtype) * 2;
+        case TkSlice:
+            // TODO: this is platform dependent, (ptr 32 / 64, len 32 / 64)
+            return BITS_TO_BYTES(128);
+
+        case TkPtr:
+            // TODO: this is platform dependent (32 / 64)
+            return BITS_TO_BYTES(64);
+
+        case TkOption:
+            return eval_sizeof(sema, *type.option.subtype) + BITS_TO_BYTES(8);
+        case TkArray:
+            return eval_expr(sema, type.array.len) * eval_sizeof(sema, *type.array.of);
+        case TkTypeDef:
+            return eval_sizeof_typedef(sema, type);
+    }
+}
+
 uint64_t eval_unop(Sema *sema, Expr *expr) {
     assert(expr->kind == EkUnop);
 
     uint64_t val = eval_expr(sema, expr->unop.val);
 
-    // TODO: add cast and sizeof to eval
+    // TODO: add cast to eval
     switch (expr->unop.kind) {
+        case UkSizeof:
+            return eval_sizeof(sema, expr->type);
+            break;
         case UkBitNot:
             return ~val;
         case UkNot:

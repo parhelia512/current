@@ -1255,6 +1255,8 @@ void sema_var_reassign(Sema *sema, Stmnt *stmnt) {
         elog(sema, stmnt->cursors_idx, "mismatch types, variable \"%s\" type %s, expression type %s", stmnt->varreassign.name.ident, t1, t2);
         strbfree(t1); strbfree(t2);
     }
+
+    tc_number_within_bounds(sema, stmnt->varreassign.type, stmnt->varreassign.value);
 }
 
 void sema_const_decl(Sema *sema, Stmnt *stmnt) {

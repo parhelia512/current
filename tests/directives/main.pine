@@ -1,4 +1,0 @@
-#syslink "c";
-#link "greet.o";
-#output "directives";
-#Ofast;

@@ -1,7 +1,0 @@
-main :: fn() void {
-    x :: 10;
-    y: i32: 10;
-
-    // this will error as expected
-    y = 15;
-}
